@@ -1,26 +1,29 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class Input {
-    Map<String, Bin> bins;
+    ArrayList<Problem> problems;
 
     public Input() {
-        this.bins = new HashMap<>();
+        this.problems = new ArrayList<>();
     }
 
-    public void addBin(String id, int numberOfItems, int capacity) {
-        bins.put(id, new Bin(id, numberOfItems, capacity));
+    public void addProblem(String id, int numberOfDistinctItems, int capacityOfEachBin) {
+        problems.add(new Problem(id, numberOfDistinctItems, capacityOfEachBin));
     }
 
-    public void addItemToBin(String binId, int weight, int count) {
-        Bin bin = bins.get(binId);
-        if (bin != null) {
-            bin.addItem(weight, count);
+    public void addItemToProblem(String problemId, int weight, int count) {
+        Problem problem = problems.stream().filter(p -> p.id.equals(problemId)).findFirst().orElse(null);
+        if (problem != null) {
+            for (int i = 0; i < count; i++) {
+                problem.items.add(new Item(weight));
+            }
+        } else {
+            throw new IllegalArgumentException("Problem with id " + problemId + " not found.");
         }
     }
 
@@ -29,17 +32,17 @@ class Input {
             File file = new File("BPP.txt");
             Scanner scanner = new Scanner(file);
 
-            String currentBinId = null;
+            String currentProblemId = null;
             int numberOfItems = 0;
             int capacity = 0;
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
                 if (line.contains("TEST")) {
-                    currentBinId = line;
+                    currentProblemId = line;
                     numberOfItems = Integer.parseInt(scanner.nextLine().trim());
                     capacity = Integer.parseInt(scanner.nextLine().trim());
-                    this.addBin(currentBinId, numberOfItems, capacity);
+                    this.addProblem(currentProblemId, numberOfItems, capacity);
                 } else if (line.matches("\\d+\\s+\\d+")) {
                     Pattern intPattern = Pattern.compile("\\d+");
                     Matcher matcher = intPattern.matcher(line);
@@ -50,7 +53,7 @@ class Input {
                     }
                     int weight = weightAndCount[0];
                     int count = weightAndCount[1];
-                    this.addItemToBin(currentBinId, weight, count);
+                    this.addItemToProblem(currentProblemId, weight, count);
                 }
             }
             scanner.close();

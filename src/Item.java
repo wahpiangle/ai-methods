@@ -1,9 +1,7 @@
 class Item {
     int weight;
-    int count;
 
-    public Item(int weight, int count) {
+    public Item(int weight) {
         this.weight = weight;
-        this.count = count;
     }
 }
