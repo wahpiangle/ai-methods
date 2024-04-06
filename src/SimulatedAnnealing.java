@@ -22,13 +22,13 @@ public class SimulatedAnnealing {
             }
 
             List<Bin> bestSolution = simulatedAnnealing(initialSolution);
-            // System.out.println("Best solution for problem " + problem.id + ":");
-            // for (Bin bin : bestSolution) {
-            // System.out.println("Bin with capacity " + bin.capacity + " contains:");
-            // for (Item item : bin.items) {
-            // System.out.println("Item " + item.weight);
-            // }
-            // }
+            System.out.println("Best solution for problem " + problem.id + ":");
+            for (Bin bin : bestSolution) {
+                System.out.println("Bin with capacity " + bin.capacity + " contains:");
+                for (Item item : bin.items) {
+                    System.out.println("Item " + item.weight);
+                }
+            }
             System.out.println("Total cost for problem " + problem.id + ": " + calculateTotalCost(bestSolution));
         }
     }
