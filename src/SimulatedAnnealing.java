@@ -1,11 +1,19 @@
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+import javax.swing.*;
+
 public class SimulatedAnnealing {
     private static final int INITIAL_TEMPERATURE = 1000;
-    private static final double COOLING_RATE = 0.003;
-    private static final int ITERATIONS_AT_TEMPERATURE = 100;
+    private static final double COOLING_RATE = 0.0003;
 
     public static void main(String[] args) {
         Input input = new Input();
@@ -15,63 +23,55 @@ public class SimulatedAnnealing {
         for (Problem problem : problems) {
             List<Bin> initialSolution = new ArrayList<>();
             for (int i = 0; i < problem.items.size(); i++) {
-                // Create a bin for each item
                 Bin bin = new Bin(problem.capacityOfEachBin);
                 bin.addItem(problem.items.get(i).weight, 1);
                 initialSolution.add(bin);
             }
 
-            List<Bin> bestSolution = simulatedAnnealing(initialSolution);
-            System.out.println("Best solution for problem " + problem.id + ":");
-            for (Bin bin : bestSolution) {
-                System.out.println("Bin with capacity " + bin.capacity + " contains:");
-                for (Item item : bin.items) {
-                    System.out.println("Item " + item.weight);
-                }
-            }
+            List<Bin> bestSolution = simulatedAnnealing(initialSolution, problem);
             System.out.println("Total cost for problem " + problem.id + ": " + calculateTotalCost(bestSolution));
         }
     }
 
-    private static List<Bin> simulatedAnnealing(List<Bin> initialSolution) {
+    private static List<Bin> simulatedAnnealing(List<Bin> initialSolution, Problem problem) {
         List<Bin> currentSolution = new ArrayList<>(initialSolution);
         List<Bin> bestSolution = new ArrayList<>(currentSolution);
         double temperature = INITIAL_TEMPERATURE;
-
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeries series = new XYSeries("Current solution");
         while (temperature > 1) {
-            for (int i = 0; i < ITERATIONS_AT_TEMPERATURE; i++) {
-                List<Bin> newSolution = getNeighborSolution(currentSolution);
-                double currentEnergy = calculateTotalCost(currentSolution);
-                double newEnergy = calculateTotalCost(newSolution);
+            List<Bin> newSolution = getNeighborSolution(currentSolution);
+            double currentEnergy = calculateTotalCost(currentSolution);
+            double newEnergy = calculateTotalCost(newSolution);
 
-                if (acceptanceProbability(currentEnergy, newEnergy, temperature) > Math.random()) {
-                    currentSolution = newSolution;
-                    if (newEnergy < calculateTotalCost(bestSolution)) {
-                        bestSolution = new ArrayList<>(newSolution);
-                    }
+            if (acceptanceProbability(currentEnergy, newEnergy, temperature) > Math.random()) {
+                currentSolution = newSolution;
+                if (newEnergy < calculateTotalCost(bestSolution)) {
+                    bestSolution = new ArrayList<>(newSolution);
                 }
             }
+            series.add(temperature, calculateTotalCost(currentSolution));
             temperature *= 1 - COOLING_RATE;
         }
+        dataset.addSeries(series);
+        plotChart(dataset, problem);
         return bestSolution;
     }
 
     private static List<Bin> getNeighborSolution(List<Bin> solution) {
         List<Bin> neighborSolution = new ArrayList<>(solution);
-        // Randomly select two bins
         Random random = new Random();
 
-        // Randomly select an item from a random bin and move it to another random bin
         Bin bin1 = neighborSolution.get(random.nextInt(neighborSolution.size()));
         Bin bin2 = neighborSolution.get(random.nextInt(neighborSolution.size()));
-        if (bin1.items.size() > 0) {
+        if (!bin1.items.isEmpty()) {
             Item item = bin1.items.get(random.nextInt(bin1.items.size()));
             if (bin2.getRemainingCapacity() >= item.weight) {
                 bin1.removeItem(item.weight);
                 bin2.addItem(item.weight, 1);
             }
         }
-        neighborSolution.removeIf(bin -> bin.items.size() == 0);
+        neighborSolution.removeIf(bin -> bin.items.isEmpty());
         return neighborSolution;
     }
 
@@ -84,5 +84,23 @@ public class SimulatedAnnealing {
             return 1.0;
         }
         return Math.exp((currentEnergy - newEnergy) / temperature);
+    }
+
+    private static void plotChart(XYSeriesCollection dataset, Problem problem) {
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "Simulated Annealing for problem " + problem.id,
+                "Temperature",
+                "Cost",
+                dataset
+        );
+        chart.getXYPlot().getDomainAxis().setInverted(true);
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(800, 600));
+        JFrame frame = new JFrame("Cost function");
+        frame.setContentPane(chartPanel);
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
 }
