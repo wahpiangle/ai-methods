@@ -6,37 +6,37 @@ import java.util.Random;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import javax.swing.*;
 
 public class SimulatedAnnealing {
-    private static final int INITIAL_TEMPERATURE = 1000;
-    private static final double COOLING_RATE = 0.0003;
+    static final int DEFAULT_TEMPERATURE = 20000;
+    static final double DEFAULT_COOLING_RATE = 0.001;
+    static final int DEFAULT_ITERATIONS = 1;
 
     public static void main(String[] args) {
         Input input = new Input();
         input.getBinsFromTextFile();
-
+        int[] initialTemperatures = {10, 100, 500, 1000, 5000, 10000, 20000, 50000, 100000, 200000};
+        double[] coolingRates = {0.00005,0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0};
         List<Problem> problems = input.problems;
-        for (Problem problem : problems) {
-            List<Bin> initialSolution = new ArrayList<>();
-            for (int i = 0; i < problem.items.size(); i++) {
-                Bin bin = new Bin(problem.capacityOfEachBin);
-                bin.addItem(problem.items.get(i).weight, 1);
-                initialSolution.add(bin);
-            }
-
-            List<Bin> bestSolution = simulatedAnnealing(initialSolution, problem);
-            System.out.println("Total cost for problem " + problem.id + ": " + calculateTotalCost(bestSolution));
-        }
+        plotCoolingRateAgainstCost(coolingRates, problems);
+        plotTemperatureAgainstCost(initialTemperatures, problems);
     }
 
-    private static List<Bin> simulatedAnnealing(List<Bin> initialSolution, Problem problem) {
+    private static List<Bin> solveProblem(Problem problem, double temperature, double coolingRate) {
+        List<Bin> initialSolution = new ArrayList<>();
+        for (int i = 0; i < problem.items.size(); i++) {
+            Bin bin = new Bin(problem.capacityOfEachBin);
+            bin.addItem(problem.items.get(i).weight, 1);
+            initialSolution.add(bin);
+        }
+
         List<Bin> currentSolution = new ArrayList<>(initialSolution);
         List<Bin> bestSolution = new ArrayList<>(currentSolution);
-        double temperature = INITIAL_TEMPERATURE;
         XYSeriesCollection dataset = new XYSeriesCollection();
         XYSeries series = new XYSeries("Current solution");
         while (temperature > 1) {
@@ -51,12 +51,13 @@ public class SimulatedAnnealing {
                 }
             }
             series.add(temperature, calculateTotalCost(currentSolution));
-            temperature *= 1 - COOLING_RATE;
+            temperature *= 1 - coolingRate;
         }
         dataset.addSeries(series);
-        plotChart(dataset, problem);
+//        plotChart(dataset, problem);
         return bestSolution;
     }
+
 
     private static List<Bin> getNeighborSolution(List<Bin> solution) {
         List<Bin> neighborSolution = new ArrayList<>(solution);
@@ -101,6 +102,51 @@ public class SimulatedAnnealing {
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+
+    private static void plotCoolingRateAgainstCost(double[] coolingRates, List<Problem> problems) {
+    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (double rate : coolingRates) {
+            addAverageCostDatasetValue(problems, DEFAULT_TEMPERATURE, rate, dataset, String.valueOf(rate));
+        }
+
+        generateBarChart(dataset, "Cooling rate");
+    }
+
+    private static void plotTemperatureAgainstCost(int[] initialTemperatures, List<Problem> problems) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (int temp : initialTemperatures) {
+            addAverageCostDatasetValue(problems, temp, DEFAULT_COOLING_RATE, dataset, String.valueOf(temp));
+        }
+
+        generateBarChart(dataset, "Temperature");
+    }
+
+    private static void addAverageCostDatasetValue(List<Problem> problems, int temp, double coolingRate,DefaultCategoryDataset dataset ,String s) {
+        double averageCost = 0;
+        for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
+            for (Problem problem : problems) {
+                averageCost += calculateTotalCost(solveProblem(problem, temp, coolingRate));
+            }
+        }
+        averageCost /= DEFAULT_ITERATIONS;
+        dataset.addValue(averageCost, "Cost", s);
+    }
+
+    private static void generateBarChart(DefaultCategoryDataset dataset, String categoryAxisLabel) {
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Simulated Annealing",
+                categoryAxisLabel,
+                "Cost",
+                dataset
+        );
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(800, 600));
+        JFrame frame = new JFrame("Effects of parameter values on cost function");
+        frame.setContentPane(chartPanel);
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 }
