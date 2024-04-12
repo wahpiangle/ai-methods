@@ -31,4 +31,12 @@ class Bin {
             }
         }
     }
+
+    public boolean canFit(int itemWeight) {
+        int usedCapacity = 0;
+        for (Item item : items) {
+            usedCapacity += item.weight;
+        }
+        return (usedCapacity + itemWeight) <= capacity;
+    }
 }
