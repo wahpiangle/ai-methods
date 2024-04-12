@@ -13,18 +13,22 @@ import org.jfree.data.xy.XYSeriesCollection;
 import javax.swing.*;
 
 public class SimulatedAnnealing {
-    static final int DEFAULT_TEMPERATURE = 20000;
+    static final int DEFAULT_TEMPERATURE = 5000;
     static final double DEFAULT_COOLING_RATE = 0.001;
-    static final int DEFAULT_ITERATIONS = 1;
+    static final int DEFAULT_ITERATIONS = 10;
 
     public static void main(String[] args) {
         Input input = new Input();
         input.getBinsFromTextFile();
         int[] initialTemperatures = {10, 100, 500, 1000, 5000, 10000, 20000, 50000, 100000, 200000};
-        double[] coolingRates = {0.00005,0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0};
+        double[] coolingRates = {0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0};
         List<Problem> problems = input.problems;
+        for (Problem problem : problems) {
+            List<Bin> bins = solveProblem(problem, DEFAULT_TEMPERATURE, DEFAULT_COOLING_RATE);
+            System.out.println("Problem " + problem.id + " cost: " + calculateTotalCost(bins));
+        }
         plotCoolingRateAgainstCost(coolingRates, problems);
-        plotTemperatureAgainstCost(initialTemperatures, problems);
+//        plotTemperatureAgainstCost(initialTemperatures, problems);
     }
 
     private static List<Bin> solveProblem(Problem problem, double temperature, double coolingRate) {
@@ -106,7 +110,7 @@ public class SimulatedAnnealing {
     }
 
     private static void plotCoolingRateAgainstCost(double[] coolingRates, List<Problem> problems) {
-    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (double rate : coolingRates) {
             addAverageCostDatasetValue(problems, DEFAULT_TEMPERATURE, rate, dataset, String.valueOf(rate));
         }
@@ -123,7 +127,7 @@ public class SimulatedAnnealing {
         generateBarChart(dataset, "Temperature");
     }
 
-    private static void addAverageCostDatasetValue(List<Problem> problems, int temp, double coolingRate,DefaultCategoryDataset dataset ,String s) {
+    private static void addAverageCostDatasetValue(List<Problem> problems, int temp, double coolingRate, DefaultCategoryDataset dataset, String s) {
         double averageCost = 0;
         for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
             for (Problem problem : problems) {
