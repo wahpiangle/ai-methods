@@ -14,41 +14,37 @@ public class BestFit {
     }
 
     private static List<Bin> solveProblem(Problem problem) {
-        List<Bin> initialSolution = new ArrayList<>();
-        for (int i = 0; i < problem.items.size(); i++) {
-            Bin bin = new Bin(problem.capacityOfEachBin);
-            bin.addItem(problem.items.get(i).weight, 1);
-            initialSolution.add(bin);
-        }
+        List<Bin> currentSolution = new ArrayList<>();
+        List<Item> remainingItems = new ArrayList<>(problem.items);
 
-        List<Bin> currentSolution = new ArrayList<>(initialSolution);
-        List<Bin> bestSolution = new ArrayList<>(currentSolution);
+        while (!remainingItems.isEmpty()) {
+            Item currentItem = remainingItems.get(0);
 
-        for (Item item : problem.items){
-            Bin bestBin = null;
-            int minRemainingCapacity = Integer.MAX_VALUE;
+            Bin bestFitBin = null;
+            int minRemainingCapacity = Integer.MAX_VALUE; // Initialize with max value as getRemainingCapacity is initialized as 0 so cannot use
 
             for (Bin bin : currentSolution) {
-                if (bin.canFit(item.weight) && bin.getRemainingCapacity() < minRemainingCapacity) {
-                    bestBin = bin;
-                    minRemainingCapacity = bin.getRemainingCapacity();
+                int remainingCapacity = bin.getRemainingCapacity();
+                if (remainingCapacity >= currentItem.weight && remainingCapacity < minRemainingCapacity) {
+                    bestFitBin = bin;
+                    minRemainingCapacity = remainingCapacity;
                 }
             }
 
-            if (bestBin != null) {
-                bestBin.addItem(item.weight, 1);
+            if (bestFitBin != null) {
+                bestFitBin.addItem(currentItem.weight, 1);
+                remainingItems.remove(currentItem); // Remove placed item
             } else {
-                // If no suitable bin is found, create a new bin and place the item into it
+                // No bin can fit so create a new one
                 Bin newBin = new Bin(problem.capacityOfEachBin);
-                newBin.addItem(item.weight, 1);
+                newBin.addItem(currentItem.weight, 1);
                 currentSolution.add(newBin);
+                remainingItems.remove(currentItem); // Remove placed item from remaining items array
             }
         }
 
-        if (currentSolution.size() < bestSolution.size()) {
-            bestSolution = currentSolution;
-        }
-
-        return bestSolution;
+        return currentSolution;
     }
 }
+
+
