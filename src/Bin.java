@@ -32,4 +32,12 @@ class Bin {
         }
     }
 
+
+    public boolean addItemFFD(int weight) {
+        if (getRemainingCapacity() >= weight) {
+            items.add(new Item(weight));
+            return true;
+        }
+        return false;
+    }
 }
