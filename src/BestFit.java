@@ -16,9 +16,8 @@ public class BestFit {
     private static List<Bin> solveProblem(Problem problem) {
         List<Bin> currentSolution = new ArrayList<>();
         List<Item> remainingItems = new ArrayList<>(problem.items);
-
         while (!remainingItems.isEmpty()) {
-            Item currentItem = remainingItems.get(0);
+            Item currentItem = remainingItems.getFirst();
 
             Bin bestFitBin = null;
             int minRemainingCapacity = Integer.MAX_VALUE; // Initialize with max value as getRemainingCapacity is initialized as 0 so cannot use
