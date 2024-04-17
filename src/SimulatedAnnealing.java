@@ -26,7 +26,7 @@ public class SimulatedAnnealing {
         double[] coolingRates = {1.0, 0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005};
         List<Problem> problems = input.problems;
         plotCoolingRateAgainstCost(coolingRates, problems);
-        plotTemperatureAgainstCost(initialTemperatures, problems);
+//        plotTemperatureAgainstCost(initialTemperatures, problems);
 //        plotIterationsAgainstCost(problems, initialTemperatures, coolingRates);
     }
 
@@ -152,7 +152,7 @@ public class SimulatedAnnealing {
     private static void plotCoolingRateAgainstCost(double[] coolingRates, List<Problem> problems) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (double rate : coolingRates) {
-            addAverageCostDatasetValue(problems, DEFAULT_TEMPERATURE, rate, dataset, String.valueOf(rate));
+            addAverageCostDatasetValue(problems, DEFAULT_TEMPERATURE, rate, dataset, (rate * 100 + "%" ));
         }
 
         generateBarChart(dataset, "Cooling rate");
