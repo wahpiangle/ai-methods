@@ -31,7 +31,25 @@ class Bin {
             }
         }
     }
+  
+    public int getTotalWeight() {
+        int totalWeight = 0;
+        for (Item item : items) {
+            totalWeight += item.getWeight();
+        }
+        return totalWeight;
+    }
 
+    public int getAvailableCapacity() {
+        int totalWeight = 0;
+        for (Item item : items) {
+            totalWeight += item.weight;
+        }
+        return capacity - totalWeight;
+    }
+
+    public boolean canAddItem(int weight) {
+        return getAvailableCapacity() >= weight;
 
     public boolean addItemFFD(int weight) {
         if (getRemainingCapacity() >= weight) {
