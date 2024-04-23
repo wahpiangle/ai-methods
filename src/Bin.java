@@ -31,7 +31,7 @@ class Bin {
             }
         }
     }
-
+  
     public int getTotalWeight() {
         int totalWeight = 0;
         for (Item item : items) {
@@ -50,5 +50,12 @@ class Bin {
 
     public boolean canAddItem(int weight) {
         return getAvailableCapacity() >= weight;
+
+    public boolean addItemFFD(int weight) {
+        if (getRemainingCapacity() >= weight) {
+            items.add(new Item(weight));
+            return true;
+        }
+        return false;
     }
 }
