@@ -22,23 +22,18 @@ public class BestFit {
             dataset.addValue(result.iterations, "Iterations", "Problem " + problem.id);
             dataset.addValue(result.solution.size(), "Cost", "Problem " + problem.id);
         }
-        plotBarChart(dataset, "Best Fit");
+        plotBarChart(dataset);
     }
 
     private static Result solveProblem(Problem problem) {
         List<Bin> currentSolution = new ArrayList<>();
         List<Item> remainingItems = new ArrayList<>(problem.items);
-<<<<<<< Updated upstream
-        while (!remainingItems.isEmpty()) {
-            Item currentItem = remainingItems.getFirst();
-=======
         int iterationCount = 0;
 
         while (!remainingItems.isEmpty()) {
             iterationCount++;
 
             Item currentItem = remainingItems.get(0);
->>>>>>> Stashed changes
 
             Bin bestFitBin = null;
             int minRemainingCapacity = Integer.MAX_VALUE;
@@ -75,16 +70,16 @@ public class BestFit {
         }
     }
 
-    private static void plotBarChart(DefaultCategoryDataset dataset, String title) {
+    private static void plotBarChart(DefaultCategoryDataset dataset) {
         JFreeChart chart = ChartFactory.createBarChart(
-                title,
+                "Best Fit",
                 "Problem ID",
                 "Value",
                 dataset
         );
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new Dimension(800, 600));
-        JFrame frame = new JFrame(title);
+        JFrame frame = new JFrame("Best Fit");
         frame.setContentPane(chartPanel);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
