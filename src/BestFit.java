@@ -1,5 +1,12 @@
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.*;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 public class BestFit {
 
@@ -7,20 +14,34 @@ public class BestFit {
         Input input = new Input();
         input.getBinsFromTextFile();
         List<Problem> problems = input.problems;
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (Problem problem : problems) {
-            List<Bin> bestSolution = solveProblem(problem);
-            System.out.println("Total cost for problem: " + problem.id + ":" + bestSolution.size());
+            Result result = solveProblem(problem);
+            System.out.println("Total cost for problem " + problem.id + ": " + result.solution.size());
+            System.out.println("Iterations for problem " + problem.id + ": " + result.iterations);
+            dataset.addValue(result.iterations, "Iterations", "Problem " + problem.id);
+            dataset.addValue(result.solution.size(), "Cost", "Problem " + problem.id);
         }
+        plotBarChart(dataset, "Best Fit");
     }
 
-    private static List<Bin> solveProblem(Problem problem) {
+    private static Result solveProblem(Problem problem) {
         List<Bin> currentSolution = new ArrayList<>();
         List<Item> remainingItems = new ArrayList<>(problem.items);
+<<<<<<< Updated upstream
         while (!remainingItems.isEmpty()) {
             Item currentItem = remainingItems.getFirst();
+=======
+        int iterationCount = 0;
+
+        while (!remainingItems.isEmpty()) {
+            iterationCount++;
+
+            Item currentItem = remainingItems.get(0);
+>>>>>>> Stashed changes
 
             Bin bestFitBin = null;
-            int minRemainingCapacity = Integer.MAX_VALUE; // Initialize with max value as getRemainingCapacity is initialized as 0 so cannot use
+            int minRemainingCapacity = Integer.MAX_VALUE;
 
             for (Bin bin : currentSolution) {
                 int remainingCapacity = bin.getRemainingCapacity();
@@ -32,18 +53,42 @@ public class BestFit {
 
             if (bestFitBin != null) {
                 bestFitBin.addItem(currentItem.weight, 1);
-                remainingItems.remove(currentItem); // Remove placed item
+                remainingItems.remove(currentItem);
             } else {
-                // No bin can fit so create a new one
                 Bin newBin = new Bin(problem.capacityOfEachBin);
                 newBin.addItem(currentItem.weight, 1);
                 currentSolution.add(newBin);
-                remainingItems.remove(currentItem); // Remove placed item from remaining items array
+                remainingItems.remove(currentItem);
             }
         }
 
-        return currentSolution;
+        return new Result(currentSolution, iterationCount);
+    }
+
+    private static class Result {
+        List<Bin> solution;
+        int iterations;
+
+        Result(List<Bin> solution, int iterations) {
+            this.solution = solution;
+            this.iterations = iterations;
+        }
+    }
+
+    private static void plotBarChart(DefaultCategoryDataset dataset, String title) {
+        JFreeChart chart = ChartFactory.createBarChart(
+                title,
+                "Problem ID",
+                "Value",
+                dataset
+        );
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(800, 600));
+        JFrame frame = new JFrame(title);
+        frame.setContentPane(chartPanel);
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
 }
-
-
