@@ -29,7 +29,7 @@ class Input {
 
     public void getBinsFromTextFile() {
         try {
-            File file = new File("../BPP.txt");
+            File file = new File("BPP.txt");
             Scanner scanner = new Scanner(file);
 
             String currentProblemId = null;
